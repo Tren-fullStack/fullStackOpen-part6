@@ -1,15 +1,10 @@
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+import { createSlice, current } from '@reduxjs/toolkit'
+import anecdotesService from '../services/anecdotesService'
 
 const getId = () => (100000 * Math.random()).toFixed(0)
 
 const asObject = (anecdote) => {
+  console.log(anecdote)
   return {
     content: anecdote,
     id: getId(),
@@ -17,41 +12,58 @@ const asObject = (anecdote) => {
   }
 }
 
-const initialState = anecdotesAtStart.map(asObject)
-
-const reducer = (state = initialState, action) => {
-  console.log('state now: ', state)
-  console.log('action', action)
-
-  switch (action.type) {
-    case "INCREMENT":
-      let id = action.payload.id
-      
-      // find anecdote by id and update votes, if not found dont update that anecdote
+const anecdoteSlice = createSlice ({
+  name: 'anecdote',
+  initialState: [],
+  reducers: {
+    increment(state, action) {
+      let id = action.payload
       let newState = state.map(anecdote => 
         anecdote.id === id ? {...anecdote, votes: anecdote.votes + 1}: anecdote
       )
-      newState = newState.sort((a,b) => b.votes - a.votes)
-      return newState
-    case 'CREATE':
-      let newAnecdote = asObject(action.payload)
-      return state.concat(newAnecdote)
-    default: return state
+      return newState.sort((a,b) => b.votes - a.votes)
+    },
+    create (state, action) {
+      let newAnecdote = action.payload
+      state.push(newAnecdote) 
+    },
+    setInitial(state, action) {
+      state = action.payload
+      return state
+    }
+  }
+})
+
+export const { increment, create, setInitial } = anecdoteSlice.actions
+
+export const initializeAnecdotes = () => {
+  return async(dispatch) => {  
+    const initialAnecdotes = await anecdotesService.getAnecdotes()
+    dispatch(setInitial(initialAnecdotes))
   }
 }
 
-export const incrementVote = (id) => {
-  return {
-      type: 'INCREMENT',
-      payload: { id }
+export const postAnecdote = (anecdote) => {
+  return async(dispatch) => {
+    let objAnecdote = asObject(anecdote)
+    let data = await anecdotesService.addAnecdote(objAnecdote)
+
+    dispatch(create(data))
   }
 }
 
-export const createAnecdote = (anecdote) => {
-  return({
-    type:'CREATE',
-    payload: anecdote
-  })
+export const putVote = (id, anecdotes) => {
+  let anecdoteToUpvote = anecdotes.find(anecdote => anecdote.id === id)
+  console.log('before upvote', anecdoteToUpvote.votes)
+  anecdoteToUpvote = {
+    ...anecdoteToUpvote,
+    votes: anecdoteToUpvote.votes + 1
+  }
+  return async(dispatch) => {
+    let data = await anecdotesService.updateVote(id, anecdoteToUpvote)
+
+    dispatch(increment(data.id))
+  }
 }
 
-export default reducer
+export default anecdoteSlice.reducer

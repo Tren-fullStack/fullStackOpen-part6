@@ -1,0 +1,29 @@
+{
+  "anecdotes": [
+    {
+      "content": "Premature optimization is the root of all evil.",
+      "id": "25170",
+      "votes": 4
+    },
+    {
+      "content": "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.",
+      "id": "98312",
+      "votes": 8
+    },
+    {
+      "id": "64296",
+      "content": "My Name is Jeff",
+      "votes": 3
+    },
+    {
+      "id": "62957",
+      "content": "Bush Did 9/11",
+      "votes": 8
+    },
+    {
+      "id": "34831",
+      "content": "This note should take 5 seconds",
+      "votes": 5
+    }
+  ]
+}
